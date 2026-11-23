@@ -128,6 +128,13 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
 .seg button:hover{color:#141414}
 .seg button:focus-visible{outline:1px solid #141414;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.flip{transition:none}}
+.mockup.photo{background:#DDDDDA;overflow:hidden;perspective:none}
+.mockup.photo .flip{width:100%;height:100%;transform:none !important;transform-style:flat}
+.mockup.photo .face{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transform:none;backface-visibility:visible;transition:opacity .8s cubic-bezier(.65,0,.35,1),transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.mockup.photo .face.back{opacity:0;transform:scale(1.02)}
+.mockup.photo .flip.is-back .face.back{opacity:1;transform:scale(1)}
+.mockup.photo .flip.is-back .face.front{opacity:0;transform:scale(1.02)}
+
 .social .link{color:#5C5C5A;transition:color .25s ease}
 .social .link:hover{color:#141414}
 .social .link[aria-current="page"]{color:#141414;font-weight:600}
@@ -262,13 +269,11 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
   // Numero WhatsApp per gli ordini (formato internazionale senza +, es. '393480000000').
   // Se vuoto, WhatsApp si apre con il messaggio pronto e si sceglie a chi inviarlo.
   var ORDER_PHONE = '';
-  var COLORS = [
-    { id:'nero',  name:'Nero',     fill:'#1F1F1E', dark:true },
-    { id:'lago',  name:'Blu lago', fill:'#2F55E6', dark:true },
-    { id:'sabbia',name:'Sabbia',   fill:'#D8CFBD', dark:false }
-  ];
+  var COLORS = [ { id:'panna', name:'Panna', fill:'#E8E1D3', dark:false } ];
   var SIZES = ['XS','S','M','L','XL','XXL'];
-  var merch = { color: 'nero', size: 'M', name: '', side: 'front' };
+  var PHOTO_FRONT = 'https://d8j0ntlcm91z4.cloudfront.net/user_38lzNKtwezdG3Q4Io1nXSXoMQu9/hf_20261123_091617_60c672c1-4136-4029-a30d-c67298358ac0.png';
+  var PHOTO_BACK = 'https://d8j0ntlcm91z4.cloudfront.net/user_38lzNKtwezdG3Q4Io1nXSXoMQu9/hf_20261123_091716_9432465d-889a-46c2-8008-1056802bb65b.png';
+  var merch = { color: 'panna', size: 'M', name: '', side: 'front' };
 
   var BODY = 'M160 76 L120 87 Q88 96 80 122 L52 398 Q50 412 62 416 L86 422 Q97 424 99 412 L112 212 L109 446 Q109 462 124 462 L276 462 Q291 462 291 446 L288 212 L301 412 Q303 424 314 422 L338 416 Q350 412 348 398 L320 122 Q312 96 280 87 L240 76 Q200 92 160 76 Z';
   function fleeceSVG(side){
@@ -332,20 +337,22 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
     var sz = SIZES.map(function(s){ return '<button type="button" class="sz" data-size="'+s+'" aria-pressed="'+(s===merch.size)+'">'+s+'</button>'; }).join('');
     view.innerHTML = '<div class="detail merch">'
       + '<div class="head"><div class="poster">'
-      + '<div class="mockup"><button type="button" class="flip'+(merch.side==='back'?' is-back':'')+'" aria-label="Gira il pile"><span class="face front">'+fleeceSVG('front')+'</span><span class="face back">'+fleeceSVG('back')+'</span></button></div>'
+      + '<div class="mockup photo"><button type="button" class="flip'+(merch.side==='back'?' is-back':'')+'" aria-label="Mostra fronte o retro del pile">'
+      + '<img class="face front" src="'+PHOTO_FRONT+'" alt="Ragazzo vicino a un lago con il pile panna CAI Giovani del Lago, logo ricamato sul petto">'
+      + '<img class="face back" src="'+PHOTO_BACK+'" alt="Lo stesso ragazzo di spalle, con il logo CAI ricamato grande sulla schiena del pile" loading="lazy">'
+      + '</button></div>'
       + '<div class="seg" role="group" aria-label="Vista"><button type="button" data-side="front" aria-pressed="'+(merch.side!=='back')+'">Fronte</button><button type="button" data-side="back" aria-pressed="'+(merch.side==='back')+'">Retro</button></div>'
       + '</div>'
       + '<div class="info">'
       + '<h1>Il pile del gruppo</h1>'
-      + '<p>Il nostro pile, con il logo CAI Giovani del Lago e il tuo nome ricamati sul petto.</p>'
+      + '<p>Il nostro pile in sherpa color panna, con il simbolo CAI ricamato sul petto e, in grande, sulla schiena.</p>'
       + '<div class="opts">'
-      + '<fieldset class="opt"><legend>Colore</legend><div class="swatches">'+sw+'</div></fieldset>'
       + '<fieldset class="opt"><legend>Taglia</legend><div class="sizes">'+sz+'</div></fieldset>'
-      + '<div class="opt"><label class="lab" for="nm">Nome da ricamare</label><input class="nm" id="nm" type="text" maxlength="14" autocomplete="off" placeholder="Max 14 caratteri" value="'+esc(merch.name)+'"></div>'
+      + '<div class="opt"><label class="lab" for="nm">Nome da ricamare (facoltativo)</label><input class="nm" id="nm" type="text" maxlength="14" autocomplete="off" placeholder="Max 14 caratteri" value="'+esc(merch.name)+'"></div>'
       + '</div>'
       + '<dl><div><dt>Prezzo e tempi</dt><dd>Nella community WhatsApp</dd></div></dl>'
       + '<a class="cta" id="orderCta" href="#" target="_blank" rel="noopener"><span>Ordina su WhatsApp</span><span class="arr" aria-hidden="true">→</span></a>'
-      + '<p class="hint">Si apre WhatsApp con il messaggio già compilato: colore, taglia e nome.</p>'
+      + '<p class="hint">Si apre WhatsApp con il messaggio già compilato: taglia e nome.</p>'
       + '</div></div></div>';
     view.querySelectorAll('.sw').forEach(function(b){ b.addEventListener('click', function(){
       merch.color = b.getAttribute('data-color');
