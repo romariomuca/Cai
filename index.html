@@ -109,7 +109,27 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
   .poster{min-width:0;flex-basis:100%}
   .cap,.coords{display:none}
   .brand img{height:30px}
+  .social{gap:20px}
 }
+
+/* merch */
+.merch .poster{flex:0 1 520px}
+.mockup{position:relative;aspect-ratio:4/5;background:#E3E3E0;display:flex;align-items:center;justify-content:center}
+.mockup svg{width:86%;height:auto;display:block;transition:filter .4s ease}
+.mockup .fill{transition:fill .5s ease}
+.opt{display:flex;flex-direction:column;gap:12px;border:0;margin:0;padding:0;min-width:0}
+.opt legend,.opt label.lab{font-size:15px;color:#5C5C5A;padding:0;margin-bottom:12px}
+.swatches,.sizes{display:flex;flex-wrap:wrap;gap:10px}
+.sw{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 16px 0 8px;border:1px solid rgba(20,20,20,.18);border-radius:999px;font-size:15px}
+.sw i{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.sz{all:unset;box-sizing:border-box;cursor:pointer;min-width:52px;min-height:44px;padding:0 14px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(20,20,20,.18);border-radius:999px;font-size:15px}
+.sw[aria-pressed="true"],.sz[aria-pressed="true"]{border-color:#141414;background:#141414;color:#F4F4F2}
+.sw[aria-pressed="true"] i{box-shadow:0 0 0 2px #F4F4F2}
+.sw:focus-visible,.sz:focus-visible,.nm:focus-visible{outline:1px solid #141414;outline-offset:3px}
+.nm{width:100%;min-height:52px;padding:0 16px;border:1px solid rgba(20,20,20,.25);background:transparent;font:inherit;font-size:17px;color:#141414;border-radius:0}
+.nm::placeholder{color:#8A8A87}
+.info .hint{margin:0;font-size:14px;line-height:1.4;color:#5C5C5A}
+.opts{display:flex;flex-direction:column;gap:32px;padding:8px 0}
 </style>
 </head>
 <body>
@@ -119,7 +139,8 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
 <div class="wrap">
   <header class="top">
     <span id="topLeft"></span>
-    <nav class="social" aria-label="Social">
+    <nav class="social" aria-label="Principale">
+      <a class="link" id="navMerch" href="#merch">Merch</a>
       <a class="link" href="https://chat.whatsapp.com/FDFcdlCM39PJUm9yumOcyt" target="_blank" rel="noopener">WhatsApp ↗</a>
       <a class="link" href="https://www.instagram.com/caigiovanidellago/" target="_blank" rel="noopener">Instagram ↗</a>
     </nav>
@@ -130,7 +151,7 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
   <footer class="bottom">
     <a class="brand" href="#home"><img src="assets/logo.png" alt=""><span>CAI Giovani del Lago</span></a>
     <p class="cap" id="cap" aria-live="polite">More mountains. Less scrolling.</p>
-    <a class="next plain" href="#gita-gro"><span class="dot"></span>Prossima: Sab 21.11 →</a>
+    <a class="next plain" href="#gita-pia"><span class="dot"></span>Prossima: Dom 13.12 →</a>
   </footer>
 </div>
 
@@ -144,7 +165,7 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
     { id:'pia', short:'Alpe Piazza e Cima Lago', title:'Alpe Piazza e Cima Lago', date:'Domenica 13 dicembre 2026', ds:'13.12', up:true, poster:null,
       desc:'In Valle del Bitto, con pranzo in rifugio.',
       stats:[['Zona','Valle del Bitto'],['Pranzo','In rifugio'],['Dettagli','Nella community WhatsApp']], photos:[] },
-    { id:'gro', short:'Monte Grona', title:'Monte Grona', date:'Sabato 21 novembre 2026', ds:'21.11', up:true, poster:'grona.jpg',
+    { id:'gro', short:'Monte Grona', title:'Monte Grona', date:'Sabato 21 novembre 2026', ds:'21.11', up:false, poster:'grona.jpg',
       desc:'Due gruppi, stessa vetta: Ferrata del Centenario C.A.O. oppure via normale (direttissima).',
       stats:[['Zona','Prealpi Comasche'],['Dislivello','+750 m'],['Gruppo 01 · Ferrata','D · EEA · 2h45'],['Gruppo 02 · Via normale','EE · 1h']], photos:[] },
     { id:'sao', short:'Lago Saoseo + Viola', title:'Lago Saoseo + Lago Viola', date:'Sabato 24 ottobre 2026', ds:'24.10', up:false, poster:'saoseo-poster.jpg',
@@ -222,10 +243,94 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
       + '</div>';
   }
 
+  /* ===== MERCH ===== */
+  // Numero WhatsApp per gli ordini (formato internazionale senza +, es. '393480000000').
+  // Se vuoto, WhatsApp si apre con il messaggio pronto e si sceglie a chi inviarlo.
+  var ORDER_PHONE = '';
+  var COLORS = [
+    { id:'nero',  name:'Nero',     fill:'#1F1F1E', dark:true },
+    { id:'lago',  name:'Blu lago', fill:'#2F55E6', dark:true },
+    { id:'sabbia',name:'Sabbia',   fill:'#D8CFBD', dark:false }
+  ];
+  var SIZES = ['XS','S','M','L','XL','XXL'];
+  var merch = { color: 'nero', size: 'M', name: '' };
+
+  function fleeceSVG(){
+    return '<svg viewBox="0 0 400 500" role="img" aria-label="Anteprima del pile personalizzato">'
+      + '<g id="fl" stroke-linejoin="round" stroke-linecap="round">'
+      // body + sleeves
+      + '<path class="fill" id="flBody" d="M160 76 L120 87 Q88 96 80 122 L52 398 Q50 412 62 416 L86 422 Q97 424 99 412 L112 212 L109 446 Q109 462 124 462 L276 462 Q291 462 291 446 L288 212 L301 412 Q303 424 314 422 L338 416 Q350 412 348 398 L320 122 Q312 96 280 87 L240 76 Q200 92 160 76 Z" stroke-width="1.4"/>'
+      // collar
+      + '<path class="fill" id="flCollar" d="M160 78 L163 44 Q200 34 237 44 L240 78 Q200 92 160 78 Z" stroke-width="1.4"/>'
+      // details
+      + '<g id="flLines" fill="none" stroke-width="1.1">'
+      + '<path d="M163 56 Q200 47 237 56"/>'
+      + '<path d="M200 40 L200 200"/>'
+      + '<path d="M110 440 L290 440"/>'
+      + '<path d="M54 384 L98 394 M346 384 L302 394"/>'
+      + '<path d="M112 212 Q112 160 124 118 M288 212 Q288 160 276 118" stroke-dasharray="3 4"/>'
+      + '</g>'
+      + '<rect id="flPull" x="196" y="196" width="8" height="18" rx="3"/>'
+      // logo (left chest, viewer) + name (right chest, viewer)
+      + '<image id="flLogo" href="'+A+'logo.png" x="128" y="122" width="50" height="31"/>'
+      + '<text id="flName" x="248" y="143" text-anchor="middle" font-family="Hauora Sans, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing=".5"></text>'
+      + '</g></svg>';
+  }
+
+  function paintFleece(){
+    var c = COLORS.filter(function(x){ return x.id === merch.color; })[0];
+    var stroke = c.dark ? 'rgba(255,255,255,.28)' : 'rgba(20,20,20,.45)';
+    var thread = c.dark ? '#EEEAE2' : '#141414';
+    ['flBody','flCollar'].forEach(function(id){ var el = document.getElementById(id); if(el){ el.setAttribute('fill', c.fill); el.setAttribute('stroke', stroke); } });
+    var lines = document.getElementById('flLines'); if (lines) lines.setAttribute('stroke', stroke);
+    var pull = document.getElementById('flPull'); if (pull) pull.setAttribute('fill', c.dark ? '#BDBDBA' : '#6E6E6B');
+    var logo = document.getElementById('flLogo'); if (logo) logo.style.filter = c.dark ? 'invert(1) brightness(1.1)' : 'none';
+    var nm = document.getElementById('flName');
+    if (nm){ nm.textContent = merch.name ? merch.name : 'Il tuo nome'; nm.setAttribute('fill', thread); nm.setAttribute('opacity', merch.name ? '1' : '.4'); }
+    var cta = document.getElementById('orderCta');
+    if (cta){
+      var msg = 'Ciao! Vorrei ordinare un pile CAI Giovani del Lago.\nColore: ' + c.name + '\nTaglia: ' + merch.size + '\nNome ricamato: ' + (merch.name || '—');
+      cta.href = 'https://wa.me/' + ORDER_PHONE + '?text=' + encodeURIComponent(msg);
+    }
+  }
+
+  function renderMerch(){
+    document.title = 'Merch — CAI Giovani del Lago';
+    topLeft.innerHTML = '<a class="plain" href="#home" style="font-size:15px;color:#141414">← Tutte le gite</a>';
+    cap.textContent = TAG;
+    var sw = COLORS.map(function(c){ return '<button type="button" class="sw" data-color="'+c.id+'" aria-pressed="'+(c.id===merch.color)+'"><i style="background:'+c.fill+'"></i>'+c.name+'</button>'; }).join('');
+    var sz = SIZES.map(function(s){ return '<button type="button" class="sz" data-size="'+s+'" aria-pressed="'+(s===merch.size)+'">'+s+'</button>'; }).join('');
+    view.innerHTML = '<div class="detail merch">'
+      + '<div class="head"><div class="poster"><div class="mockup">'+fleeceSVG()+'</div></div>'
+      + '<div class="info">'
+      + '<h1>Il pile del gruppo</h1>'
+      + '<p>Il nostro pile, con il logo CAI Giovani del Lago e il tuo nome ricamati sul petto.</p>'
+      + '<div class="opts">'
+      + '<fieldset class="opt"><legend>Colore</legend><div class="swatches">'+sw+'</div></fieldset>'
+      + '<fieldset class="opt"><legend>Taglia</legend><div class="sizes">'+sz+'</div></fieldset>'
+      + '<div class="opt"><label class="lab" for="nm">Nome da ricamare</label><input class="nm" id="nm" type="text" maxlength="14" autocomplete="off" placeholder="Max 14 caratteri" value="'+esc(merch.name)+'"></div>'
+      + '</div>'
+      + '<dl><div><dt>Prezzo e tempi</dt><dd>Nella community WhatsApp</dd></div></dl>'
+      + '<a class="cta" id="orderCta" href="#" target="_blank" rel="noopener"><span>Ordina su WhatsApp</span><span class="arr" aria-hidden="true">→</span></a>'
+      + '<p class="hint">Si apre WhatsApp con il messaggio già compilato: colore, taglia e nome.</p>'
+      + '</div></div></div>';
+    view.querySelectorAll('.sw').forEach(function(b){ b.addEventListener('click', function(){
+      merch.color = b.getAttribute('data-color');
+      view.querySelectorAll('.sw').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      paintFleece(); }); });
+    view.querySelectorAll('.sz').forEach(function(b){ b.addEventListener('click', function(){
+      merch.size = b.getAttribute('data-size');
+      view.querySelectorAll('.sz').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      paintFleece(); }); });
+    document.getElementById('nm').addEventListener('input', function(ev){ merch.name = ev.target.value.trim(); paintFleece(); });
+    paintFleece();
+  }
+
   function route(){
     var m = location.hash.match(/^#gita-(\w+)/);
     var i = m ? EVENTS.findIndex(function(e){ return e.id === m[1]; }) : -1;
-    if (i >= 0) renderDetail(i); else renderHome();
+    if (location.hash === '#merch') renderMerch();
+    else if (i >= 0) renderDetail(i); else renderHome();
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
