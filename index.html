@@ -115,7 +115,22 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
 /* merch */
 .merch .poster{flex:0 1 520px}
 .mockup{position:relative;aspect-ratio:4/5;background:#E3E3E0;display:flex;align-items:center;justify-content:center}
-.mockup svg{width:86%;height:auto;display:block;transition:filter .4s ease}
+.mockup{perspective:1600px}
+.flip{all:unset;cursor:pointer;position:relative;display:block;width:86%;aspect-ratio:4/5;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.65,0,.35,1)}
+.flip.is-back{transform:rotateY(180deg)}
+.flip:focus-visible{outline:1px solid #141414;outline-offset:6px}
+.face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.face.back{transform:rotateY(180deg)}
+.face svg{width:100%;height:auto;display:block}
+.seg{display:flex;justify-content:center;gap:4px;margin-top:16px}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;padding:0 18px;display:flex;align-items:center;font-size:15px;color:#5C5C5A;border-radius:999px}
+.seg button[aria-pressed="true"]{color:#141414;font-weight:600;background:rgba(20,20,20,.07)}
+.seg button:hover{color:#141414}
+.seg button:focus-visible{outline:1px solid #141414;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.flip{transition:none}}
+.social .link{color:#5C5C5A;transition:color .25s ease}
+.social .link:hover{color:#141414}
+.social .link[aria-current="page"]{color:#141414;font-weight:600}
 .mockup .fill{transition:fill .5s ease}
 .opt{display:flex;flex-direction:column;gap:12px;border:0;margin:0;padding:0;min-width:0}
 .opt legend,.opt label.lab{font-size:15px;color:#5C5C5A;padding:0;margin-bottom:12px}
@@ -253,45 +268,60 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
     { id:'sabbia',name:'Sabbia',   fill:'#D8CFBD', dark:false }
   ];
   var SIZES = ['XS','S','M','L','XL','XXL'];
-  var merch = { color: 'nero', size: 'M', name: '' };
+  var merch = { color: 'nero', size: 'M', name: '', side: 'front' };
 
-  function fleeceSVG(){
-    return '<svg viewBox="0 0 400 500" role="img" aria-label="Anteprima del pile personalizzato">'
-      + '<g id="fl" stroke-linejoin="round" stroke-linecap="round">'
-      // body + sleeves
-      + '<path class="fill" id="flBody" d="M160 76 L120 87 Q88 96 80 122 L52 398 Q50 412 62 416 L86 422 Q97 424 99 412 L112 212 L109 446 Q109 462 124 462 L276 462 Q291 462 291 446 L288 212 L301 412 Q303 424 314 422 L338 416 Q350 412 348 398 L320 122 Q312 96 280 87 L240 76 Q200 92 160 76 Z" stroke-width="1.4"/>'
-      // collar
-      + '<path class="fill" id="flCollar" d="M160 78 L163 44 Q200 34 237 44 L240 78 Q200 92 160 78 Z" stroke-width="1.4"/>'
-      // details
-      + '<g id="flLines" fill="none" stroke-width="1.1">'
-      + '<path d="M163 56 Q200 47 237 56"/>'
-      + '<path d="M200 40 L200 200"/>'
-      + '<path d="M110 440 L290 440"/>'
-      + '<path d="M54 384 L98 394 M346 384 L302 394"/>'
-      + '<path d="M112 212 Q112 160 124 118 M288 212 Q288 160 276 118" stroke-dasharray="3 4"/>'
-      + '</g>'
-      + '<rect id="flPull" x="196" y="196" width="8" height="18" rx="3"/>'
-      // logo (left chest, viewer) + name (right chest, viewer)
-      + '<image id="flLogo" href="'+A+'logo.png" x="128" y="122" width="50" height="31"/>'
-      + '<text id="flName" x="248" y="143" text-anchor="middle" font-family="Hauora Sans, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing=".5"></text>'
-      + '</g></svg>';
+  var BODY = 'M160 76 L120 87 Q88 96 80 122 L52 398 Q50 412 62 416 L86 422 Q97 424 99 412 L112 212 L109 446 Q109 462 124 462 L276 462 Q291 462 291 446 L288 212 L301 412 Q303 424 314 422 L338 416 Q350 412 348 398 L320 122 Q312 96 280 87 L240 76 Q200 92 160 76 Z';
+  function fleeceSVG(side){
+    var front = side === 'front';
+    var g = '<svg viewBox="0 0 400 500" role="img" aria-label="'+(front?'Fronte':'Retro')+' del pile personalizzato">'
+      + '<g stroke-linejoin="round" stroke-linecap="round">'
+      + '<path class="flFill" d="'+BODY+'" stroke-width="1.4"/>';
+    if (front) {
+      g += '<path class="flFill" d="M160 78 L163 44 Q200 34 237 44 L240 78 Q200 92 160 78 Z" stroke-width="1.4"/>'
+        + '<g class="flLines" fill="none" stroke-width="1.1">'
+        + '<path d="M163 56 Q200 47 237 56"/><path d="M200 40 L200 200"/>'
+        + '<path d="M110 440 L290 440"/><path d="M54 384 L98 394 M346 384 L302 394"/>'
+        + '<path d="M112 212 Q112 160 124 118 M288 212 Q288 160 276 118" stroke-dasharray="3 4"/></g>'
+        + '<rect class="flPull" x="196" y="196" width="8" height="18" rx="3"/>'
+        + '<image class="flLogo" href="'+A+'logo.png" x="128" y="122" width="50" height="31"/>'
+        + '<text class="flName" x="248" y="143" text-anchor="middle" font-family="Hauora Sans, Helvetica Neue, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing=".5"></text>';
+    } else {
+      // back: collar seen from behind (no zip), large logo + wordmark across the upper back
+      g += '<path class="flFill" d="M160 78 L163 46 Q200 40 237 46 L240 78 Q200 92 160 78 Z" stroke-width="1.4"/>'
+        + '<g class="flLines" fill="none" stroke-width="1.1">'
+        + '<path d="M163 58 Q200 52 237 58"/>'
+        + '<path d="M110 440 L290 440"/><path d="M54 384 L98 394 M346 384 L302 394"/>'
+        + '<path d="M112 212 Q112 160 124 118 M288 212 Q288 160 276 118" stroke-dasharray="3 4"/>'
+        + '<path d="M161 76 Q200 68 239 76"/></g>'
+        + '<image class="flLogo" href="'+A+'logo.png" x="150" y="128" width="100" height="62"/>'
+        + '<text class="flThread" x="200" y="220" text-anchor="middle" font-family="Hauora Sans, Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="600" letter-spacing=".2">CAI Giovani del Lago</text>'
+        + '<text class="flThread" x="200" y="239" text-anchor="middle" font-family="Hauora Sans, Helvetica Neue, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="2.4" opacity=".75">SEZ. DERVIO</text>';
+    }
+    return g + '</g></svg>';
   }
 
   function paintFleece(){
     var c = COLORS.filter(function(x){ return x.id === merch.color; })[0];
     var stroke = c.dark ? 'rgba(255,255,255,.28)' : 'rgba(20,20,20,.45)';
     var thread = c.dark ? '#EEEAE2' : '#141414';
-    ['flBody','flCollar'].forEach(function(id){ var el = document.getElementById(id); if(el){ el.setAttribute('fill', c.fill); el.setAttribute('stroke', stroke); } });
-    var lines = document.getElementById('flLines'); if (lines) lines.setAttribute('stroke', stroke);
-    var pull = document.getElementById('flPull'); if (pull) pull.setAttribute('fill', c.dark ? '#BDBDBA' : '#6E6E6B');
-    var logo = document.getElementById('flLogo'); if (logo) logo.style.filter = c.dark ? 'invert(1) brightness(1.1)' : 'none';
-    var nm = document.getElementById('flName');
-    if (nm){ nm.textContent = merch.name ? merch.name : 'Il tuo nome'; nm.setAttribute('fill', thread); nm.setAttribute('opacity', merch.name ? '1' : '.4'); }
+    var q = function(sel, fn){ view.querySelectorAll(sel).forEach(fn); };
+    q('.flFill', function(el){ el.setAttribute('fill', c.fill); el.setAttribute('stroke', stroke); });
+    q('.flLines', function(el){ el.setAttribute('stroke', stroke); });
+    q('.flPull', function(el){ el.setAttribute('fill', c.dark ? '#BDBDBA' : '#6E6E6B'); });
+    q('.flLogo', function(el){ el.style.filter = c.dark ? 'invert(1) brightness(1.1)' : 'none'; });
+    q('.flThread', function(el){ el.setAttribute('fill', thread); });
+    q('.flName', function(el){ el.textContent = merch.name ? merch.name : 'Il tuo nome'; el.setAttribute('fill', thread); el.setAttribute('opacity', merch.name ? '1' : '.4'); });
     var cta = document.getElementById('orderCta');
     if (cta){
       var msg = 'Ciao! Vorrei ordinare un pile CAI Giovani del Lago.\nColore: ' + c.name + '\nTaglia: ' + merch.size + '\nNome ricamato: ' + (merch.name || '—');
       cta.href = 'https://wa.me/' + ORDER_PHONE + '?text=' + encodeURIComponent(msg);
     }
+  }
+
+  function setSide(side){
+    merch.side = side;
+    var f = view.querySelector('.flip'); if (f) f.classList.toggle('is-back', side === 'back');
+    view.querySelectorAll('.seg button').forEach(function(x){ x.setAttribute('aria-pressed', String(x.getAttribute('data-side') === side)); });
   }
 
   function renderMerch(){
@@ -301,7 +331,10 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
     var sw = COLORS.map(function(c){ return '<button type="button" class="sw" data-color="'+c.id+'" aria-pressed="'+(c.id===merch.color)+'"><i style="background:'+c.fill+'"></i>'+c.name+'</button>'; }).join('');
     var sz = SIZES.map(function(s){ return '<button type="button" class="sz" data-size="'+s+'" aria-pressed="'+(s===merch.size)+'">'+s+'</button>'; }).join('');
     view.innerHTML = '<div class="detail merch">'
-      + '<div class="head"><div class="poster"><div class="mockup">'+fleeceSVG()+'</div></div>'
+      + '<div class="head"><div class="poster">'
+      + '<div class="mockup"><button type="button" class="flip'+(merch.side==='back'?' is-back':'')+'" aria-label="Gira il pile"><span class="face front">'+fleeceSVG('front')+'</span><span class="face back">'+fleeceSVG('back')+'</span></button></div>'
+      + '<div class="seg" role="group" aria-label="Vista"><button type="button" data-side="front" aria-pressed="'+(merch.side!=='back')+'">Fronte</button><button type="button" data-side="back" aria-pressed="'+(merch.side==='back')+'">Retro</button></div>'
+      + '</div>'
       + '<div class="info">'
       + '<h1>Il pile del gruppo</h1>'
       + '<p>Il nostro pile, con il logo CAI Giovani del Lago e il tuo nome ricamati sul petto.</p>'
@@ -322,6 +355,8 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
       merch.size = b.getAttribute('data-size');
       view.querySelectorAll('.sz').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
       paintFleece(); }); });
+    view.querySelectorAll('.seg button').forEach(function(b){ b.addEventListener('click', function(){ setSide(b.getAttribute('data-side')); }); });
+    view.querySelector('.flip').addEventListener('click', function(){ setSide(merch.side === 'back' ? 'front' : 'back'); });
     document.getElementById('nm').addEventListener('input', function(ev){ merch.name = ev.target.value.trim(); paintFleece(); });
     paintFleece();
   }
@@ -329,6 +364,8 @@ dt{color:#5C5C5A}dd{margin:0;text-align:right}
   function route(){
     var m = location.hash.match(/^#gita-(\w+)/);
     var i = m ? EVENTS.findIndex(function(e){ return e.id === m[1]; }) : -1;
+    var nm = document.getElementById('navMerch');
+    if (location.hash === '#merch') nm.setAttribute('aria-current','page'); else nm.removeAttribute('aria-current');
     if (location.hash === '#merch') renderMerch();
     else if (i >= 0) renderDetail(i); else renderHome();
     window.scrollTo(0, 0);
